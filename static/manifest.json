@@ -1,0 +1,16 @@
+{
+  "name": "craveit",
+  "short_name": "craveit",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1b1b",
+  "theme_color": "#0b1b1b",
+  "description": "Curated social feeds, your rules.",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
