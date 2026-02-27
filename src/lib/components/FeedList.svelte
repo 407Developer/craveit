@@ -12,7 +12,7 @@
 <section class="panel">
   <div class="panel-head">
     <h2>Your Feed</h2>
-    <p>All sources, filtered to your specs.</p>
+    <p>All sources, filtered to your specs. Tap a card to open thread + comments.</p>
   </div>
 
   {#if filters}

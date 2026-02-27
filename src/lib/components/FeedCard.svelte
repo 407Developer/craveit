@@ -16,13 +16,20 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<article 
-  class="feed-card" 
+<article
+  class="feed-card"
   style="animation: fadeIn 0.3s ease {index * 0.05}s forwards"
   onclick={openDetail}
 >
   <div class="feed-media">
-    <img src={item.thumbnailUrl} alt={item.title} />
+    <img
+      src={item.thumbnailUrl}
+      alt={item.title}
+      loading={index < 2 ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchpriority={index < 2 ? 'high' : 'low'}
+      referrerpolicy="no-referrer"
+    />
     <div class="media-tag">{item.mediaType}</div>
   </div>
   <div class="feed-meta">
@@ -36,6 +43,7 @@
       <span class="tag">{tag}</span>
     {/each}
   </div>
+  <div class="open-thread">Tap To Open Thread</div>
 </article>
 
 <style>
@@ -47,15 +55,16 @@
     display: grid;
     gap: 12px;
     padding: 14px;
-    cursor: pointer;
-    transition: transform 0.2s ease, border 0.2s ease;
+    transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
     opacity: 0;
     min-width: 0;
+    cursor: pointer;
   }
 
   .feed-card:hover {
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 24px rgba(2, 8, 7, 0.28);
   }
 
   .feed-media {
@@ -124,6 +133,21 @@
     padding: 4px 8px;
     border-radius: 999px;
     background: rgba(69, 242, 193, 0.12);
+    color: var(--accent-2);
+  }
+
+  .open-thread {
+    justify-self: start;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .open-thread:hover {
+    border-color: rgba(69, 242, 193, 0.55);
     color: var(--accent-2);
   }
 

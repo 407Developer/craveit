@@ -23,7 +23,8 @@ class AppState {
         categories,
         sources,
         mediaType: this.media,
-        focus: this.focusMode
+        focus: this.focusMode,
+        limit: 24
       });
     } catch (e) {
       this.error = true;

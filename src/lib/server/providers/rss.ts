@@ -10,20 +10,40 @@ export type FeedSource = {
   topicTags: string[];
 };
 
+type FeedCacheEntry = {
+  expiresAt: number;
+  items: FeedItem[];
+};
+
+const FEED_CACHE_TTL_MS = 2 * 60 * 1000;
+const feedCache = new Map<string, FeedCacheEntry>();
+
 export async function fetchRssFeed(source: FeedSource): Promise<FeedItem[]> {
+  const cached = feedCache.get(source.id);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.items;
+  }
+
   const items = await parseFeed(source.url);
 
-  return items.map((item) => ({
+  const normalized = items.map((item) => ({
     id: `${source.id}:${item.id}`,
     source: source.source,
     title: item.title || source.title,
     summary: item.summary,
     url: item.link,
-    mediaType: source.source === 'youtube' ? 'video' : 'text',
+    mediaType: source.source === 'youtube' ? ('video' as const) : ('text' as const),
     thumbnailUrl: item.thumbnail,
     createdAt: item.published,
     author: item.author || source.title,
     topicTags: source.topicTags,
     score: undefined
   }));
+
+  feedCache.set(source.id, {
+    expiresAt: Date.now() + FEED_CACHE_TTL_MS,
+    items: normalized
+  });
+
+  return normalized;
 }

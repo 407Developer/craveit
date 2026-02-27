@@ -12,6 +12,7 @@ export const GET: RequestHandler = async ({ url }) => {
   const categories = url.searchParams.getAll('category');
   const mediaType = url.searchParams.get('mediaType');
   const focusMode = url.searchParams.get('focus') === '1';
+  const limit = Math.min(60, Math.max(6, Number(url.searchParams.get('limit') || '24')));
 
   const activeSources = sources.length === 0 ? ['youtube', 'reddit'] : sources;
   const items: FeedItem[] = [];
@@ -86,10 +87,15 @@ export const GET: RequestHandler = async ({ url }) => {
       ...item,
       url: focusMode ? '' : item.url
     }))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, limit);
 
   return json({
     items: normalized,
     nextCursor: null
+  }, {
+    headers: {
+      'cache-control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=120'
+    }
   });
 };

@@ -1,4 +1,4 @@
-import type { FeedItem, FeedResponse } from './types';
+import type { FeedItem, FeedResponse, ThreadComment } from './types';
 
 export async function getFeed(params: {
   sources?: string[];
@@ -6,6 +6,7 @@ export async function getFeed(params: {
   mediaType?: string;
   cursor?: string;
   focus?: boolean;
+  limit?: number;
 }) {
   const query = new URLSearchParams();
   params.sources?.forEach((source) => query.append('source', source));
@@ -13,6 +14,7 @@ export async function getFeed(params: {
   if (params.mediaType) query.set('mediaType', params.mediaType);
   if (params.cursor) query.set('cursor', params.cursor);
   if (params.focus) query.set('focus', '1');
+  if (params.limit) query.set('limit', String(params.limit));
 
   const response = await fetch(`/api/feed?${query.toString()}`);
   if (!response.ok) {
@@ -93,4 +95,35 @@ export async function removeSource(id: string) {
     throw new Error(data.error ?? 'Failed to remove source');
   }
   return response.json();
+}
+
+export async function getComments(itemId: string) {
+  const response = await fetch(`/api/comments?itemId=${encodeURIComponent(itemId)}`);
+  if (!response.ok) {
+    throw new Error('Failed to load comments');
+  }
+  const data = await response.json();
+  return (data.comments ?? []) as ThreadComment[];
+}
+
+export async function createComment(payload: {
+  itemId: string;
+  body: string;
+  parentId?: string | null;
+  authorHandle?: string;
+  displayName?: string;
+}) {
+  const response = await fetch('/api/comments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error ?? 'Failed to post comment');
+  }
+
+  const data = await response.json();
+  return data.comment as ThreadComment;
 }
