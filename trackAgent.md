@@ -48,3 +48,7 @@ Add route-based mobile-style navigation and improve feed/media loading speed.
 - Completed: C1, C2, C3, C4
 - In progress: none
 - Validation: `pnpm check` passed (0 errors, 0 warnings)
+
+## Deployment Fixes
+- [x] Removed machine-specific pnpm store path (`pnpm-workspace.yaml`).
+- [x] Added `netlify.toml` to override broken Netlify UI publish path.
