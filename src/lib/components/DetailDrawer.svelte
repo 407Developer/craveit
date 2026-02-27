@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { appState } from '../stores.svelte';
-  import CommentsThread from './CommentsThread.svelte';
+import { appState } from '../stores.svelte';
+  import CommentsThread from '$lib/components/CommentsThread.svelte';
 
   let item = $derived(appState.selectedItem);
 
