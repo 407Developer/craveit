@@ -1,3 +1,11 @@
 [build]
   command = "pnpm build"
   publish = ".netlify"
+
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_COMMENTS_TABLE, OFFICIAL_HANDLE, OFFICIAL_NAME"
+
+[[headers]]
+  for = "/_app/immutable/*"
+  [headers.values]
+    cache-control = "public, immutable, max-age=31536000"
