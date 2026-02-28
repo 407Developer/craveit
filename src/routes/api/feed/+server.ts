@@ -60,18 +60,19 @@ export const GET: RequestHandler = async ({ url }) => {
   const limit = Math.min(60, Math.max(6, Number(url.searchParams.get('limit') || '12')));
   const offset = parseCursor(url.searchParams.get('cursor'));
 
-  const activeSources = sources.length === 0 ? ['youtube', 'reddit'] : sources;
+  const activeSources = sources.length === 0 ? ['youtube', 'reddit', 'web'] : sources;
   const items: FeedItem[] = [];
 
   const sourceEntries = getSources()
     .filter((source) => activeSources.includes(source.source))
-    .filter((source) => !pausedSourceIds.has(source.id))
-    .filter((source) => {
-      if (categories.length === 0) return true;
-      return source.topicTags.some((tag) => categories.includes(tag));
-    });
+    .filter((source) => !pausedSourceIds.has(source.id));
 
-  const rssTasks = sourceEntries.map(async (source) => {
+  const filteredSources = sourceEntries.filter((source) => {
+    if (categories.length === 0) return true;
+    return source.topicTags.some((tag) => categories.includes(tag));
+  });
+
+  const rssTasks = filteredSources.map(async (source) => {
     const feedItems = await fetchRssFeed(source);
     return applySourceWeight(feedItems, source.weight ?? 100);
   });

@@ -99,20 +99,37 @@ video {
   transition: all 0.2s ease;
 }
 
+.topbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+  background: rgba(11, 27, 27, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+:root.theme-light .topbar {
+  background: rgba(245, 252, 249, 0.8);
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+
 .primary {
-  background: linear-gradient(135deg, #ffb038, #45f2c1);
+  background: var(--accent);
   color: #1b1303;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(255, 176, 56, 0.3);
 }
 
-.ghost {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--ink);
+.ghost.active, .chip.active {
+  background: var(--accent) !important;
+  color: #1b1303 !important;
+  font-weight: 700 !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(255, 176, 56, 0.4) !important;
 }
 
-.ghost:hover {
-  background: rgba(69, 242, 193, 0.16);
-}
 
 @keyframes shimmer {
   0% { background-position: 0% 0; }
