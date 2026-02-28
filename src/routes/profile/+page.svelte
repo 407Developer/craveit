@@ -42,13 +42,14 @@
 
 <style>
   .panel {
-    background: rgba(13, 34, 30, 0.86);
+    background: var(--bg-soft);
     border: 0;
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--shadow);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(10px);
   }
+
 
   .profile {
     display: grid;

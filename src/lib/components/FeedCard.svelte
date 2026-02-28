@@ -82,8 +82,12 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-sm);
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.05);
     overflow: hidden;
+  }
+
+  :root:not(.theme-light) .feed-media {
+    background: rgba(0, 0, 0, 0.35);
   }
 
   .feed-media img {
@@ -120,6 +124,7 @@
     font-size: 18px;
     margin: 0;
     overflow-wrap: anywhere;
+    color: var(--ink);
   }
 
   .feed-summary {
@@ -155,6 +160,11 @@
     padding: 8px 12px;
     font-size: 12px;
   }
+
+  :root.theme-light .open-thread {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
 
   .open-thread:hover {
     background: rgba(69, 242, 193, 0.2);

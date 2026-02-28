@@ -52,10 +52,14 @@
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
+  :root.theme-light .reader-container {
+    border-top-color: rgba(0, 0, 0, 0.05);
+  }
+
   .prose {
     font-family: 'Inter', system-ui, sans-serif;
     line-height: 1.7;
-    color: #e0f2f1;
+    color: var(--ink);
     font-size: 16px;
   }
 
@@ -75,7 +79,7 @@
   .article-body :global(h2),
   .article-body :global(h3) {
     margin: 1.5em 0 0.5em;
-    color: #fff;
+    color: var(--ink);
   }
 
   .article-body :global(img) {
@@ -86,7 +90,7 @@
   }
 
   .article-body :global(a) {
-    color: var(--accent);
+    color: var(--accent-2);
     text-decoration: underline;
   }
 
@@ -101,6 +105,10 @@
     border-radius: 4px;
     width: 100%;
     animation: pulse 1.5s infinite ease-in-out;
+  }
+
+  :root.theme-light .skeleton-line {
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .skeleton-line.title { height: 24px; width: 80%; margin-bottom: 12px; }
@@ -118,4 +126,5 @@
     text-align: center;
     color: var(--ink-soft);
   }
+
 </style>

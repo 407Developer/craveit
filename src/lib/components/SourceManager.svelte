@@ -187,12 +187,12 @@
 
 <style>
   .panel {
-    background: rgba(13, 34, 30, 0.85);
+    background: var(--bg-soft);
     border: 0;
     border-radius: var(--radius-lg);
-    padding: 20px;
+    padding: 24px;
     box-shadow: var(--shadow);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(12px);
     overflow: hidden;
   }
 
@@ -232,6 +232,11 @@
     min-width: 0;
   }
 
+  :root.theme-light select,
+  :root.theme-light input {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
   .chip-row {
     display: flex;
     flex-wrap: wrap;
@@ -248,6 +253,10 @@
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
+  }
+
+  :root.theme-light .chip {
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .chip.active {
@@ -290,6 +299,10 @@
     margin-top: 8px;
     padding-top: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  :root.theme-light .saved-row + .saved-row {
+    border-top-color: rgba(0, 0, 0, 0.05);
   }
 
   .saved-row > div {

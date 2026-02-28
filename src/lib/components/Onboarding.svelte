@@ -51,7 +51,7 @@
 
 <style>
   .panel {
-    background: rgba(13, 34, 30, 0.82);
+    background: var(--bg-soft);
     border: 0;
     border-radius: var(--radius-lg);
     padding: 20px;
