@@ -1,4 +1,4 @@
-import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
 import { Readability } from '@mozilla/readability';
 
 export async function fetchFullArticle(url: string) {
@@ -14,8 +14,11 @@ export async function fetchFullArticle(url: string) {
     if (!response.ok) return null;
 
     const html = await response.text();
-    const dom = new JSDOM(html, { url });
-    const reader = new Readability(dom.window.document);
+    // linkedom provides a lightweight DOM implementation
+    const { document } = parseHTML(html);
+    
+    // Readability needs a document or a Node
+    const reader = new Readability(document as unknown as Document);
     const article = reader.parse();
 
     if (!article) return null;
