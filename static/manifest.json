@@ -1,16 +1,37 @@
 {
-  "name": "craveit",
-  "short_name": "craveit",
-  "start_url": ".",
+  "name": "Craveit: High-Agency Feeds",
+  "short_name": "Craveit",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0b1b1b",
   "theme_color": "#0b1b1b",
-  "description": "Curated social feeds, your rules.",
+  "description": "Curated social feeds, your rules. No algorithms, just intent.",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "assets/icon.svg",
       "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon.svg",
+      "sizes": "192x192",
       "type": "image/svg+xml"
+    },
+    {
+      "src": "assets/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["social", "news", "productivity"],
+  "screenshots": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
     }
   ]
 }

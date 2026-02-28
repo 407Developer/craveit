@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { appState } from '../stores.svelte';
+  import { appState, closeFeedItem } from '../stores.svelte';
   import CommentsThread from '$lib/components/CommentsThread.svelte';
   import ArticleReader from '$lib/components/ArticleReader.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
 
   let item = $derived(appState.selectedItem);
+  let threadRef = $state<HTMLDivElement | null>(null);
 
   // Reader state
   let article = $state<{ title: string; content: string; html: string; byline: string; siteName: string } | null>(null);
@@ -59,10 +60,16 @@
       readerError = null;
       aiMessage = '';
     }
+
+    if (item && appState.openToComments) {
+      tick().then(() => {
+        threadRef?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
   });
 
   function close() {
-    appState.selectedItem = null;
+    closeFeedItem();
     aiMessage = '';
   }
 
@@ -176,7 +183,7 @@
           <p class="simple-summary">{item.summary}</p>
         {/if}
 
-        <div class="thread-section">
+        <div class="thread-section" bind:this={threadRef}>
           <div class="thread-title">Community Thread</div>
           <CommentsThread itemId={item.id} />
         </div>
@@ -358,7 +365,6 @@
     letter-spacing: 2px;
     margin-bottom: 24px;
   }
-
 
   .detail-back {
     position: absolute;

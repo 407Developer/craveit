@@ -139,9 +139,22 @@ export const GET: RequestHandler = async ({ url }) => {
     return includesPass && excludesPass;
   });
 
-  const intentFiltered = keywordFiltered.filter((item) => matchesIntent(item, intent));
+  const intentFiltered = keywordFiltered.filter((item) => {
+    if (query && intent === 'all') return true; // Skip intent check if searching and intent is all
+    return matchesIntent(item, intent);
+  });
 
-  const dateFiltered = intentFiltered.filter((item) => {
+  const keywordFinal = query 
+    ? queryFiltered.filter((item) => {
+        // When searching, inclusion is less strict (at least one match if terms exist)
+        const haystack = `${item.title} ${item.summary} ${item.content ?? ''} ${item.author}`.toLowerCase();
+        const includesPass = include.length === 0 || include.some((term) => haystack.includes(term));
+        const excludesPass = exclude.length === 0 || exclude.every((term) => !haystack.includes(term));
+        return includesPass && excludesPass;
+      })
+    : intentFiltered;
+
+  const dateFiltered = keywordFinal.filter((item) => {
     const ts = new Date(item.createdAt).getTime();
     if (Number.isNaN(ts)) return true;
     if (dateFrom) {

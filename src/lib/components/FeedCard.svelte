@@ -5,7 +5,12 @@
   let { item, index } = $props<{ item: FeedItem, index: number }>();
 
   function openDetail() {
-    openFeedItem(item);
+    openFeedItem(item, false);
+  }
+
+  function openThread(e: MouseEvent) {
+    e.stopPropagation();
+    openFeedItem(item, true);
   }
 
   function formatDate(dateString: string) {
@@ -54,7 +59,7 @@
       <span class="tag">{tag}</span>
     {/each}
   </div>
-  <div class="open-thread">Tap To Open Thread</div>
+  <button class="open-thread" onclick={openThread}>Tap To Open Thread</button>
 </article>
 
 <style>
@@ -159,6 +164,9 @@
     border-radius: 999px;
     padding: 8px 12px;
     font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
   }
 
   :root.theme-light .open-thread {
@@ -168,6 +176,7 @@
 
   .open-thread:hover {
     background: rgba(69, 242, 193, 0.2);
+    transform: scale(1.05);
   }
 
   @keyframes fadeIn {

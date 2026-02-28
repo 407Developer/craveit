@@ -1,22 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import FilterBar from '$lib/components/FilterBar.svelte';
+  import InstallButton from '$lib/components/InstallButton.svelte';
   import { appState, setTimeboxMinutes, togglePausedSource } from '$lib/stores.svelte';
   import { getSources } from '$lib/api';
 
-  let deferredInstall = $state<any>(null);
-  let showInstallBtn = $state(false);
   let sources = $state<any[]>([]);
   let timebox = $state(30);
   let curationDue = $state(false);
 
   onMount(() => {
-    const handler = (event: any) => {
-      event.preventDefault();
-      deferredInstall = event;
-      showInstallBtn = true;
-    };
-    window.addEventListener('beforeinstallprompt', handler);
     timebox = appState.timeboxMinutes;
     getSources().then((data) => {
       sources = data.connected ?? [];
@@ -28,16 +21,7 @@
       const elapsedDays = Math.floor((Date.now() - new Date(last).getTime()) / (1000 * 60 * 60 * 24));
       curationDue = elapsedDays >= 30;
     }
-    return () => window.removeEventListener('beforeinstallprompt', handler);
   });
-
-  async function handleInstall() {
-    if (!deferredInstall) return;
-    deferredInstall.prompt();
-    await deferredInstall.userChoice;
-    deferredInstall = null;
-    showInstallBtn = false;
-  }
 
   function applyTimebox() {
     setTimeboxMinutes(timebox);
@@ -89,13 +73,11 @@
     {/if}
   </section>
 
-  {#if showInstallBtn}
-    <section class="panel">
-      <h2>Install App</h2>
-      <p>Install craveit on this device for quick access.</p>
-      <button class="primary" onclick={handleInstall}>Install</button>
-    </section>
-  {/if}
+  <section class="panel">
+    <h2>App Access</h2>
+    <p>Quick access to Craveit from your device.</p>
+    <InstallButton />
+  </section>
 </main>
 
 <style>

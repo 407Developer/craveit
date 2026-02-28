@@ -28,6 +28,7 @@ class AppState {
   feed = $state<FeedItem[]>([]);
   focusMode = $state(false);
   selectedItem = $state<FeedItem | null>(null);
+  openToComments = $state(false);
   query = $state('');
   region = $state('global');
   dateFrom = $state('');
@@ -55,6 +56,7 @@ class AppState {
     this.loadLocalPrefs();
     this.recordAppVisit();
     this.applyTheme();
+    this.initHistoryListener();
   }
 
   private loadLocalPrefs() {
@@ -128,6 +130,14 @@ class AppState {
     this.persistPrefs();
   }
 
+  private initHistoryListener() {
+    if (typeof window === 'undefined') return;
+    window.addEventListener('popstate', (event) => {
+      if (this.selectedItem && (!event.state || event.state.type !== 'detail')) {
+        this.closeItem(false); // Close without pushing new state
+      }
+    });
+  }
 
   private saveUsage(seconds: number) {
     if (typeof window === 'undefined') return;
@@ -345,9 +355,21 @@ class AppState {
     this.refreshFeed();
   }
 
-  openItem(item: FeedItem) {
+  openItem(item: FeedItem, toComments = false) {
     this.selectedItem = item;
+    this.openToComments = toComments;
     this.recordChannelVisit(item.sourceId || item.author || item.source);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ type: 'detail', id: item.id }, '');
+    }
+  }
+
+  closeItem(shouldPopHistory = true) {
+    this.selectedItem = null;
+    this.openToComments = false;
+    if (shouldPopHistory && typeof window !== 'undefined' && window.history.state?.type === 'detail') {
+      window.history.back();
+    }
   }
 }
 
@@ -433,8 +455,12 @@ export function togglePausedSource(sourceId: string) {
   return appState.togglePausedSource(sourceId);
 }
 
-export function openFeedItem(item: FeedItem) {
-  return appState.openItem(item);
+export function openFeedItem(item: FeedItem, toComments = false) {
+  return appState.openItem(item, toComments);
+}
+
+export function closeFeedItem() {
+  return appState.closeItem();
 }
 
 export function toggleTheme() {

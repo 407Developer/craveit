@@ -195,12 +195,13 @@
   .filters {
     display: grid;
     gap: 14px;
-    background: rgba(12, 22, 21, 0.6);
+    background: var(--bg-soft);
     border-radius: var(--radius-md);
     padding: 14px;
     border: 0;
     margin-bottom: 16px;
     overflow: hidden;
+    box-shadow: var(--shadow);
   }
 
   .filters.compact {
@@ -236,6 +237,10 @@
     font-size: 13px;
   }
 
+  :root.theme-light .input {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
   .advanced-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -255,6 +260,10 @@
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
+  }
+
+  :root.theme-light .chip {
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .chip.active {
@@ -292,15 +301,19 @@
   }
 
   .ghost {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--ink);
     text-decoration: none;
+    border: 0;
+  }
+
+  :root.theme-light .ghost {
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .ghost.active {
     background: rgba(69, 242, 193, 0.2);
-    border-color: var(--accent-2);
+    color: var(--accent-2);
   }
 
   @media (min-width: 720px) {
