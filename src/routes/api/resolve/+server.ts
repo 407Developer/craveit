@@ -33,7 +33,13 @@ function normalizeRedditSubreddit(input: string) {
 
 export const POST: RequestHandler = async ({ request }) => {
   const payload = (await request.json()) as {
-    kind?: 'youtube_channel' | 'youtube_playlist' | 'reddit_subreddit' | 'website_rss';
+    kind?:
+      | 'youtube_channel'
+      | 'youtube_playlist'
+      | 'reddit_subreddit'
+      | 'website_rss'
+      | 'mastodon_account'
+      | 'mastodon_hashtag';
     input?: string;
   };
 
@@ -121,6 +127,50 @@ export const POST: RequestHandler = async ({ request }) => {
     return json({
       success: true,
       url: `https://openrss.org/feeds/reddit/r/${subreddit}`
+    });
+  }
+
+  if (payload.kind === 'mastodon_account') {
+    const urlMatch = input.match(/^https?:\/\//i);
+    if (urlMatch) {
+      if (input.endsWith('.rss')) {
+        return json({ success: true, url: input });
+      }
+      return json({ success: true, url: `${input}.rss` });
+    }
+    const handleMatch = input.match(/^@?([a-z0-9_]+)@([a-z0-9.-]+)$/i);
+    if (!handleMatch) {
+      return json(
+        { success: false, error: 'Use a Mastodon profile URL or handle like @user@instance.social' },
+        { status: 400 }
+      );
+    }
+    const [, username, instance] = handleMatch;
+    return json({
+      success: true,
+      url: `https://${instance}/@${username}.rss`
+    });
+  }
+
+  if (payload.kind === 'mastodon_hashtag') {
+    const urlMatch = input.match(/^https?:\/\//i);
+    if (urlMatch) {
+      if (input.endsWith('.rss')) {
+        return json({ success: true, url: input });
+      }
+      return json({ success: true, url: `${input}.rss` });
+    }
+    const tagMatch = input.match(/^#?([a-z0-9_]+)@([a-z0-9.-]+)$/i);
+    if (!tagMatch) {
+      return json(
+        { success: false, error: 'Use a tag like #ai@mastodon.social or a full tag URL' },
+        { status: 400 }
+      );
+    }
+    const [, tag, instance] = tagMatch;
+    return json({
+      success: true,
+      url: `https://${instance}/tags/${tag}.rss`
     });
   }
 

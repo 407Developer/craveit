@@ -1,13 +1,21 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { addSource, getSources, removeSource, resolveSource } from '../api';
+  import { addSource, getSources, removeSource, resolveSource, updateSourceWeight } from '../api';
+  import { appState, togglePausedSource } from '../stores.svelte';
 
   const categories = ['tech', 'hobby project', 'tech updates', 'politics'];
 
   let sources: any[] = $state([]);
   let error = $state('');
   let loading = $state(false);
-  let kind = $state<'youtube_channel' | 'youtube_playlist' | 'reddit_subreddit' | 'website_rss'>('youtube_channel');
+  let kind = $state<
+    | 'youtube_channel'
+    | 'youtube_playlist'
+    | 'reddit_subreddit'
+    | 'website_rss'
+    | 'mastodon_account'
+    | 'mastodon_hashtag'
+  >('youtube_channel');
   let input = $state('');
   let title = $state('');
   let selectedTags = $state<string[]>([]);
@@ -43,7 +51,9 @@
         ? 'youtube'
         : kind.startsWith('reddit')
           ? 'reddit'
-          : 'web';
+          : kind.startsWith('mastodon')
+            ? 'mastodon'
+            : 'web';
 
       const friendlyTitle = title.trim() || input.trim();
 
@@ -51,7 +61,8 @@
         title: friendlyTitle,
         url: resolved.url,
         source: sourceType,
-        topicTags: selectedTags
+        topicTags: selectedTags,
+        weight: 100
       });
 
       input = '';
@@ -74,6 +85,15 @@
       error = e?.message ?? 'Could not remove source.';
     }
   }
+
+  async function handleWeightChange(id: string, value: number) {
+    try {
+      await updateSourceWeight(id, value);
+      sources = sources.map((source) => (source.id === id ? { ...source, weight: value } : source));
+    } catch (e: any) {
+      error = e?.message ?? 'Could not update weighting.';
+    }
+  }
 </script>
 
 <section class="panel" id="source-manager">
@@ -89,6 +109,8 @@
         <option value="youtube_channel">YouTube channel link</option>
         <option value="youtube_playlist">YouTube playlist link</option>
         <option value="reddit_subreddit">Reddit subreddit (r/name)</option>
+        <option value="mastodon_account">Mastodon account</option>
+        <option value="mastodon_hashtag">Mastodon hashtag</option>
         <option value="website_rss">Website RSS link</option>
       </select>
     </label>
@@ -97,7 +119,7 @@
       <span>Paste here</span>
       <input
         type="text"
-        placeholder="Example: https://www.youtube.com/@mkbhd"
+        placeholder="Example: https://www.youtube.com/@mkbhd or @user@mastodon.social"
         bind:value={input}
       />
     </label>
@@ -135,8 +157,28 @@
           <div>
             <div class="saved-title">{source.title}</div>
             <div class="saved-sub">{source.url}</div>
+            <div class="weight-row">
+              <label for={`weight-${source.id}`}>Weight {source.weight ?? 100}%</label>
+              <input
+                id={`weight-${source.id}`}
+                type="range"
+                min="0"
+                max="100"
+                value={source.weight ?? 100}
+                oninput={(e) => handleWeightChange(source.id, Number((e.currentTarget as HTMLInputElement).value))}
+              />
+            </div>
           </div>
-          <button class="ghost" onclick={() => handleRemove(source.id)}>Remove</button>
+          <div class="row-actions">
+            <button
+              class="ghost"
+              class:active={appState.pausedSourceIds.has(source.id)}
+              onclick={() => togglePausedSource(source.id)}
+            >
+              {appState.pausedSourceIds.has(source.id) ? 'Paused' : 'Keep'}
+            </button>
+            <button class="ghost" onclick={() => handleRemove(source.id)}>Remove</button>
+          </div>
         </div>
       {/each}
     {/if}
@@ -145,8 +187,8 @@
 
 <style>
   .panel {
-    background: rgba(13, 34, 30, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(13, 34, 30, 0.85);
+    border: 0;
     border-radius: var(--radius-lg);
     padding: 20px;
     box-shadow: var(--shadow);
@@ -182,7 +224,7 @@
   input {
     background: rgba(12, 22, 21, 0.6);
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 0;
     color: var(--ink);
     padding: 10px 12px;
     font-size: 14px;
@@ -198,8 +240,8 @@
   }
 
   .chip {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: transparent;
+    border: 0;
+    background: rgba(255, 255, 255, 0.08);
     color: var(--ink);
     padding: 8px 14px;
     border-radius: 999px;
@@ -211,7 +253,6 @@
   .chip.active {
     background: var(--accent);
     color: #1a1002;
-    border-color: transparent;
     box-shadow: 0 6px 12px rgba(255, 176, 56, 0.3);
   }
 
@@ -221,27 +262,6 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-  }
-
-  .primary,
-  .ghost {
-    border-radius: 999px;
-    padding: 10px 18px;
-    font-size: 13px;
-    cursor: pointer;
-    border: 1px solid transparent;
-  }
-
-  .primary {
-    background: linear-gradient(135deg, #ffb038, #45f2c1);
-    color: #1b1303;
-    font-weight: 600;
-  }
-
-  .ghost {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.2);
-    color: var(--ink);
   }
 
   .error-text {
@@ -264,11 +284,17 @@
     gap: 12px;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .saved-row + .saved-row {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .saved-row > div {
     min-width: 0;
+    width: 100%;
   }
 
   .saved-title {
@@ -279,6 +305,28 @@
     font-size: 12px;
     color: var(--ink-soft);
     word-break: break-all;
+  }
+
+  .weight-row {
+    margin-top: 8px;
+    display: grid;
+    gap: 6px;
+  }
+
+  .weight-row label {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ghost.active {
+    background: rgba(255, 176, 56, 0.2);
+    border-color: rgba(255, 176, 56, 0.4);
   }
 
   .muted {

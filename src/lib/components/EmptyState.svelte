@@ -11,15 +11,14 @@
 <style>
   .state {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border: 0;
     padding: 24px;
     border-radius: var(--radius-md);
     text-align: center;
   }
 
   .ghost {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--ink);
     border-radius: 999px;
     padding: 10px 18px;

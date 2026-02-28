@@ -52,3 +52,31 @@ Add route-based mobile-style navigation and improve feed/media loading speed.
 ## Deployment Fixes
 - [x] Removed machine-specific pnpm store path (`pnpm-workspace.yaml`).
 - [x] Added `netlify.toml` to override broken Netlify UI publish path.
+
+## Personalization + Comments Upgrade
+- [x] Added search, region, date range, and video length filters in UI + feed API.
+- [x] Improved post details by exposing longer content/write-up in detail drawer.
+- [x] Improved media preview resilience with thumbnail fallback behavior.
+- [x] Started real backend comments persistence path with Supabase support.
+- [x] Added per-user identity fields for commenting (stored locally client-side).
+
+## Functional Feed & Content Richness
+- [x] Fixed RSS parser to handle more content types and structures (`content:encoded`).
+- [x] Implemented robust User-Agent and timeout settings for feed reliability.
+- [x] Added diverse tech sources (TechCrunch, Wired, Ars Technica).
+- [x] Enhanced `DetailDrawer` to support long-form, "text-rich" content reading without truncation.
+- [x] Expanded default categories and sources in app state for a functional "out-of-the-box" experience.
+
+## Critic-Led Product Pass
+- [x] Added intent-first filtering (`Learn`, `News`, `Entertain`, `All`) with server-side enforcement.
+- [x] Added pulse mode (`strict chronological`) and non-infinite feed paging with explicit `Load More`.
+- [x] Added global include/exclude keyword controls (whitelist/blacklist behavior).
+- [x] Added daily time-boxing with feed dimming + caught-up state.
+- [x] Added streak tracking for app usage and channel-level engagement.
+- [x] Added manual source weighting sliders + source pause controls.
+- [x] Added 30-day curation workflow in settings.
+- [x] Removed high-noise vanity indicators (feed score emphasis removed).
+- [x] Reduced border-heavy styling and shifted to calmer, cleaner surfaces.
+- [x] Improved single-feed exit UX with stronger blur, reachable back button, and swipe-to-close gesture.
+- [x] Added markdown rendering support in comments.
+- [x] Validation complete: `pnpm check` and `pnpm build` both passed.

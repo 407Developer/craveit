@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { refreshFeed } from '$lib/stores.svelte';
+  import FilterBar from '$lib/components/FilterBar.svelte';
   import FeedList from '$lib/components/FeedList.svelte';
   import DetailDrawer from '$lib/components/DetailDrawer.svelte';
 
@@ -10,7 +11,11 @@
 </script>
 
 <main class="app-main">
-  <FeedList />
+  <FeedList>
+    {#snippet filters()}
+      <FilterBar compact />
+    {/snippet}
+  </FeedList>
 </main>
 
 <DetailDrawer />

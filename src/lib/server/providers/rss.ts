@@ -6,8 +6,9 @@ export type FeedSource = {
   type: 'rss';
   title: string;
   url: string;
-  source: 'youtube' | 'reddit' | 'web';
+  source: 'youtube' | 'reddit' | 'web' | 'mastodon';
   topicTags: string[];
+  weight?: number;
 };
 
 type FeedCacheEntry = {
@@ -26,18 +27,27 @@ export async function fetchRssFeed(source: FeedSource): Promise<FeedItem[]> {
 
   const items = await parseFeed(source.url);
 
+  function computeReadTime(text: string) {
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    if (!words) return undefined;
+    return Math.max(1, Math.round(words / 200));
+  }
+
   const normalized = items.map((item) => ({
     id: `${source.id}:${item.id}`,
     source: source.source,
+    sourceId: source.id,
     title: item.title || source.title,
     summary: item.summary,
+    content: item.content,
     url: item.link,
     mediaType: source.source === 'youtube' ? ('video' as const) : ('text' as const),
     thumbnailUrl: item.thumbnail,
     createdAt: item.published,
     author: item.author || source.title,
     topicTags: source.topicTags,
-    score: undefined
+    score: undefined,
+    readTimeMinutes: source.source === 'youtube' ? undefined : computeReadTime(item.content || item.summary)
   }));
 
   feedCache.set(source.id, {

@@ -1,16 +1,21 @@
 <script lang="ts">
   import type { FeedItem } from '../types';
-  import { appState } from '../stores.svelte';
+  import { openFeedItem } from '../stores.svelte';
 
   let { item, index } = $props<{ item: FeedItem, index: number }>();
 
   function openDetail() {
-    appState.selectedItem = item;
+    openFeedItem(item);
   }
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  function fallbackThumbnail(event: Event) {
+    const image = event.currentTarget as HTMLImageElement;
+    image.src = '/assets/icon.svg';
   }
 </script>
 
@@ -25,16 +30,22 @@
     <img
       src={item.thumbnailUrl}
       alt={item.title}
-      loading={index < 2 ? 'eager' : 'lazy'}
+      loading={index < 6 ? 'eager' : 'lazy'}
       decoding="async"
       fetchpriority={index < 2 ? 'high' : 'low'}
-      referrerpolicy="no-referrer"
+      onerror={fallbackThumbnail}
     />
     <div class="media-tag">{item.mediaType}</div>
   </div>
   <div class="feed-meta">
     <span>{item.source.toUpperCase()} · {formatDate(item.createdAt)}</span>
-    <span>{item.score ?? 0} score</span>
+    <span>
+      {#if item.mediaType === 'text' && item.readTimeMinutes}
+        {item.readTimeMinutes} min read
+      {:else}
+        {item.durationLabel ?? (item.mediaType === 'video' ? 'video' : 'read')}
+      {/if}
+    </span>
   </div>
   <h3 class="feed-title">{item.title}</h3>
   <p class="feed-summary">{item.summary}</p>
@@ -51,7 +62,7 @@
     background: var(--card);
     border-radius: var(--radius-md);
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 0;
     display: grid;
     gap: 12px;
     padding: 14px;
@@ -63,8 +74,7 @@
 
   .feed-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 24px rgba(2, 8, 7, 0.28);
+    box-shadow: 0 12px 24px rgba(2, 8, 7, 0.26);
   }
 
   .feed-media {
@@ -138,8 +148,8 @@
 
   .open-thread {
     justify-self: start;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.04);
+    border: 0;
+    background: rgba(255, 255, 255, 0.08);
     color: var(--ink);
     border-radius: 999px;
     padding: 8px 12px;
@@ -147,8 +157,7 @@
   }
 
   .open-thread:hover {
-    border-color: rgba(69, 242, 193, 0.55);
-    color: var(--accent-2);
+    background: rgba(69, 242, 193, 0.2);
   }
 
   @keyframes fadeIn {

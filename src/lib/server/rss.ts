@@ -4,6 +4,7 @@ export type RssItem = {
   id: string;
   title: string;
   summary: string;
+  content: string;
   link: string;
   author: string;
   published: string;
@@ -11,46 +12,79 @@ export type RssItem = {
 };
 
 const parser: Parser = new Parser({
-  timeout: 10000,
+  timeout: 15000,
   headers: {
-    'User-Agent': 'craveit/0.1'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+  },
+  customFields: {
+    item: [
+      ['media:group', 'mediaGroup'],
+      ['content:encoded', 'contentEncoded'],
+      ['description', 'description'],
+    ]
   }
 });
 
 function stripHtml(input: string) {
-  return input.replace(/<[^>]+>/g, '').trim();
+  if (!input) return '';
+  return input
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
 }
 
-function pickThumbnail(item: Parser.Item) {
-  const media = (item as any).media?.thumbnail?.url;
+function pickThumbnail(item: any) {
+  // YouTube special
+  if (item.mediaGroup?.['media:thumbnail']) {
+    return item.mediaGroup['media:thumbnail'][0]?.$.url || '';
+  }
+
+  const media = item.media?.thumbnail?.url;
   if (media) return media;
 
-  const enclosure = (item as any).enclosure?.url;
+  const enclosure = item.enclosure?.url;
   if (enclosure) return enclosure;
 
-  const content = item.content || (item as any)['content:encoded'] || '';
+  const content = item.contentEncoded || item.content || item.description || '';
   const imgMatch = content.match(/<img[^>]+src="([^"]+)"/i);
   return imgMatch ? imgMatch[1] : '';
 }
 
 export async function parseFeed(url: string): Promise<RssItem[]> {
-  const feed = await parser.parseURL(url);
-  return (feed.items || []).map((item) => {
-    const title = item.title ?? 'Untitled';
-    const link = item.link ?? '';
-    const id = item.guid || link || title;
-    const summary = item.contentSnippet || item.summary || item.content || '';
-    const author = item.creator || item.author || feed.title || '';
-    const published = item.isoDate || (item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString());
+  try {
+    const feed = await parser.parseURL(url);
+    return (feed.items || []).map((item: any) => {
+      const title = item.title ?? 'Untitled';
+      const link = item.link ?? '';
+      const id = item.guid || link || title;
+      
+      const raw = item.contentEncoded || item.content || item.description || item.contentSnippet || '';
+      const author = item.creator || item.author || feed.title || '';
+      const published = item.isoDate || (item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString());
+      const content = stripHtml(raw);
 
-    return {
-      id,
-      title,
-      summary: stripHtml(summary).slice(0, 260),
-      link,
-      author,
-      published,
-      thumbnail: pickThumbnail(item)
-    };
-  });
+      return {
+        id,
+        title,
+        summary: content.slice(0, 300),
+        content: content.slice(0, 10000), // Substantially more content for "text-rich" posts
+        link,
+        author,
+        published,
+        thumbnail: pickThumbnail(item)
+      };
+    });
+  } catch (error) {
+    console.error(`Error parsing feed ${url}:`, error);
+    return [];
+  }
 }

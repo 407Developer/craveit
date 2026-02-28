@@ -1,5 +1,5 @@
 <script lang="ts">
-import { appState } from '../stores.svelte';
+  import { appState } from '../stores.svelte';
   import CommentsThread from '$lib/components/CommentsThread.svelte';
 
   let item = $derived(appState.selectedItem);
@@ -26,6 +26,23 @@ import { appState } from '../stores.svelte';
   }
 
   let videoId = $derived(item?.url ? parseVideoId(item.url) : null);
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  function handleTouchStart(event: TouchEvent) {
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  }
+
+  function handleTouchEnd(event: TouchEvent) {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = Math.abs(touch.clientY - touchStartY);
+    if (deltaX > 80 && deltaY < 70) {
+      close();
+    }
+  }
 
   $effect(() => {
     if (typeof document === 'undefined') return;
@@ -47,8 +64,14 @@ import { appState } from '../stores.svelte';
 {#if item}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="detail active" onclick={(e) => e.target === e.currentTarget && close()}>
+  <div
+    class="detail active"
+    onclick={(e) => e.target === e.currentTarget && close()}
+    ontouchstart={handleTouchStart}
+    ontouchend={handleTouchEnd}
+  >
     <div class="detail-card">
+      <button class="detail-back" onclick={close} aria-label="Back">←</button>
       <button class="detail-close" onclick={close}>Close</button>
 
       <div class="detail-media">
@@ -68,9 +91,15 @@ import { appState } from '../stores.svelte';
       <div class="detail-body">
         <div class="detail-meta">
           {item.source.toUpperCase()} · {item.author} · {formatDate(item.createdAt)}
+          {#if item.mediaType === 'text' && item.readTimeMinutes}
+            · {item.readTimeMinutes} min read
+          {/if}
         </div>
         <h3>{item.title}</h3>
         <p>{item.summary}</p>
+        {#if item.content && item.content !== item.summary}
+          <p class="detail-content">{item.content}</p>
+        {/if}
 
         <div class="quick-actions">
           <button class="ghost">Ask @cravit</button>
@@ -91,7 +120,8 @@ import { appState } from '../stores.svelte';
   .detail {
     position: fixed;
     inset: 0;
-    background: rgba(4, 10, 9, 0.75);
+    background: rgba(4, 10, 9, 0.62);
+    backdrop-filter: blur(10px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -109,7 +139,7 @@ import { appState } from '../stores.svelte';
     max-height: calc(100dvh - 20px);
     background: var(--bg-soft);
     border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 0;
     box-shadow: var(--shadow);
     overflow: hidden;
     animation: slideUp 0.25s ease;
@@ -158,6 +188,15 @@ import { appState } from '../stores.svelte';
     overflow-wrap: anywhere;
   }
 
+  .detail-content {
+    margin-top: 16px;
+    line-height: 1.6;
+    color: #e0f2f1;
+    font-size: 15px;
+    padding-right: 4px;
+    white-space: pre-wrap;
+  }
+
   .quick-actions {
     margin-top: 12px;
     display: flex;
@@ -191,6 +230,22 @@ import { appState } from '../stores.svelte';
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: transparent;
     color: var(--ink);
+  }
+
+  .detail-back {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+    z-index: 2;
+    font-size: 20px;
+    line-height: 1;
   }
 
   .detail-close {

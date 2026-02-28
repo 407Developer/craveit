@@ -80,6 +80,12 @@ export async function searchReddit(params: {
   const data = await response.json();
   const children = data?.data?.children ?? [];
 
+  function computeReadTime(text: string) {
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    if (!words) return undefined;
+    return Math.max(1, Math.round(words / 200));
+  }
+
   return children.map((child: any) => {
     const post = child.data ?? {};
     const thumbnail =
@@ -88,8 +94,10 @@ export async function searchReddit(params: {
     return {
       id: `rd-${post.id}`,
       source: 'reddit',
+      sourceId: `rd:${post.subreddit ?? 'all'}`,
       title: post.title ?? 'Untitled',
       summary: post.selftext?.slice(0, 220) ?? '',
+      content: post.selftext ?? '',
       url: `https://www.reddit.com${post.permalink ?? ''}`,
       mediaType: post.is_video ? 'video' : 'text',
       thumbnailUrl: thumbnail,
@@ -98,7 +106,8 @@ export async function searchReddit(params: {
         : new Date().toISOString(),
       author: post.author ?? 'reddit',
       topicTags: params.topicTags,
-      score: post.score ?? 0
+      score: post.score ?? 0,
+      readTimeMinutes: post.is_video ? undefined : computeReadTime(post.selftext ?? '')
     } satisfies FeedItem;
   });
 }

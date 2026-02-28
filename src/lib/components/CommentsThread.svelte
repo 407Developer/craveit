@@ -10,6 +10,8 @@
   let comments = $state<ThreadComment[]>([]);
   let draft = $state('');
   let replyTo = $state<ThreadComment | null>(null);
+  let handle = $state('@you');
+  let displayName = $state('You');
 
   function fmt(dateString: string) {
     const date = new Date(dateString);
@@ -40,8 +42,8 @@
         itemId,
         body,
         parentId: replyTo?.id ?? null,
-        authorHandle: '@you',
-        displayName: 'You'
+        authorHandle: handle,
+        displayName
       });
       comments = [...comments, posted];
       draft = '';
@@ -64,6 +66,43 @@
     itemId;
     refresh();
   });
+
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    const savedHandle = window.localStorage.getItem('craveit:handle');
+    const savedName = window.localStorage.getItem('craveit:displayName');
+    if (savedHandle) handle = savedHandle;
+    if (savedName) displayName = savedName;
+  });
+
+  function saveIdentity() {
+    const normalized = handle.startsWith('@') ? handle : `@${handle}`;
+    handle = normalized.toLowerCase().replace(/[^a-z0-9_@]/g, '').slice(0, 20) || '@you';
+    if (handle === '@cravit' || handle === '@crave') handle = '@you';
+    displayName = displayName.trim().slice(0, 30) || 'You';
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('craveit:handle', handle);
+      window.localStorage.setItem('craveit:displayName', displayName);
+    }
+  }
+
+  function renderMarkdown(input: string) {
+    const escaped = input
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const withLinks = escaped.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href=\"$2\" target=\"_blank\" rel=\"noreferrer\">$1</a>'
+    );
+
+    return withLinks
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br />');
+  }
 </script>
 
 <section class="thread-wrap">
@@ -73,6 +112,11 @@
   </div>
 
   <div class="composer">
+    <div class="identity-row">
+      <input class="identity-input" bind:value={displayName} placeholder="Display name" />
+      <input class="identity-input" bind:value={handle} placeholder="@handle" />
+      <button class="ghost" onclick={saveIdentity}>Save</button>
+    </div>
     {#if replyTo}
       <div class="replying">Replying to {replyTo.authorHandle}</div>
     {/if}
@@ -106,7 +150,7 @@
             <span class="meta">Pinned</span>
             <span class="meta">{fmt(comment.createdAt)}</span>
           </div>
-          <p>{comment.body}</p>
+          <div class="comment-body">{@html renderMarkdown(comment.body)}</div>
           <div class="comment-actions">
             <button class="link-btn" onclick={() => (replyTo = comment)}>Reply</button>
           </div>
@@ -121,9 +165,8 @@
             {#if comment.official}<span class="meta official-tag">Official</span>{/if}
             <span class="meta">{fmt(comment.createdAt)}</span>
           </div>
-          <p>{comment.body}</p>
+          <div class="comment-body">{@html renderMarkdown(comment.body)}</div>
           <div class="comment-actions">
-            <span class="meta">{comment.upvotes} helpful</span>
             <button class="link-btn" onclick={() => (replyTo = comment)}>Reply</button>
           </div>
 
@@ -137,7 +180,7 @@
                     {#if reply.official}<span class="meta official-tag">Official</span>{/if}
                     <span class="meta">{fmt(reply.createdAt)}</span>
                   </div>
-                  <p>{reply.body}</p>
+                  <div class="comment-body">{@html renderMarkdown(reply.body)}</div>
                 </article>
               {/each}
             </div>
@@ -150,7 +193,7 @@
 
 <style>
   .thread-wrap {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 0;
     margin-top: 12px;
     padding-top: 16px;
     display: grid;
@@ -170,7 +213,7 @@
 
   .composer {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 0;
     border-radius: 12px;
     padding: 10px;
     display: grid;
@@ -182,10 +225,27 @@
     min-width: 0;
     resize: vertical;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 0;
     background: rgba(0, 0, 0, 0.2);
     color: var(--ink);
     padding: 10px;
+    font: inherit;
+  }
+
+  .identity-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+  }
+
+  .identity-input {
+    width: 100%;
+    min-width: 0;
+    border-radius: 10px;
+    border: 0;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--ink);
+    padding: 8px 10px;
     font: inherit;
   }
 
@@ -207,18 +267,16 @@
 
   .comment {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 0;
     border-radius: 12px;
     padding: 10px;
   }
 
   .comment.official {
-    border-color: rgba(69, 242, 193, 0.5);
     background: rgba(69, 242, 193, 0.07);
   }
 
   .comment.pinned {
-    border-color: rgba(255, 176, 56, 0.45);
     background: rgba(255, 176, 56, 0.08);
   }
 
@@ -239,10 +297,21 @@
     color: var(--accent-2);
   }
 
-  p {
+  .comment-body {
     margin: 8px 0;
     line-height: 1.45;
     overflow-wrap: anywhere;
+  }
+
+  .comment-body :global(a) {
+    color: var(--accent);
+  }
+
+  .comment-body :global(code) {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12px;
   }
 
   .comment-actions {
@@ -284,5 +353,11 @@
 
   .error {
     color: #ffb4b4;
+  }
+
+  @media (max-width: 560px) {
+    .identity-row {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

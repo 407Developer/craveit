@@ -25,7 +25,7 @@
 <style>
   .panel {
     background: rgba(13, 34, 30, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 0;
     border-radius: var(--radius-lg);
     padding: 20px;
     box-shadow: var(--shadow);
@@ -51,8 +51,8 @@
   }
 
   .chip {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: transparent;
+    border: 0;
+    background: rgba(255, 255, 255, 0.08);
     color: var(--ink);
     padding: 8px 14px;
     border-radius: 999px;

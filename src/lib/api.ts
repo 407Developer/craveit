@@ -7,6 +7,16 @@ export async function getFeed(params: {
   cursor?: string;
   focus?: boolean;
   limit?: number;
+  query?: string;
+  region?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  videoLength?: 'any' | 'short' | 'medium' | 'long';
+  intent?: 'all' | 'educational' | 'entertainment' | 'news';
+  include?: string[];
+  exclude?: string[];
+  pulse?: boolean;
+  pausedSourceIds?: string[];
 }) {
   const query = new URLSearchParams();
   params.sources?.forEach((source) => query.append('source', source));
@@ -15,6 +25,16 @@ export async function getFeed(params: {
   if (params.cursor) query.set('cursor', params.cursor);
   if (params.focus) query.set('focus', '1');
   if (params.limit) query.set('limit', String(params.limit));
+  if (params.query) query.set('q', params.query);
+  if (params.region && params.region !== 'global') query.set('region', params.region);
+  if (params.dateFrom) query.set('dateFrom', params.dateFrom);
+  if (params.dateTo) query.set('dateTo', params.dateTo);
+  if (params.videoLength && params.videoLength !== 'any') query.set('videoLength', params.videoLength);
+  if (params.intent && params.intent !== 'all') query.set('intent', params.intent);
+  if (params.pulse) query.set('pulse', '1');
+  params.include?.forEach((value) => query.append('include', value));
+  params.exclude?.forEach((value) => query.append('exclude', value));
+  params.pausedSourceIds?.forEach((id) => query.append('pausedSourceId', id));
 
   const response = await fetch(`/api/feed?${query.toString()}`);
   if (!response.ok) {
@@ -22,7 +42,7 @@ export async function getFeed(params: {
   }
 
   const data: FeedResponse = await response.json();
-  return data.items;
+  return data;
 }
 
 export async function connectSource(provider: string) {
@@ -44,7 +64,13 @@ export async function getSources() {
 }
 
 export async function resolveSource(params: {
-  kind: 'youtube_channel' | 'youtube_playlist' | 'reddit_subreddit' | 'website_rss';
+  kind:
+    | 'youtube_channel'
+    | 'youtube_playlist'
+    | 'reddit_subreddit'
+    | 'website_rss'
+    | 'mastodon_account'
+    | 'mastodon_hashtag';
   input: string;
 }) {
   const response = await fetch('/api/resolve', {
@@ -69,8 +95,9 @@ export async function resolveSource(params: {
 export async function addSource(payload: {
   title: string;
   url: string;
-  source: 'youtube' | 'reddit' | 'web';
+  source: 'youtube' | 'reddit' | 'web' | 'mastodon';
   topicTags?: string[];
+  weight?: number;
 }) {
   const response = await fetch('/api/sources', {
     method: 'POST',
@@ -97,10 +124,24 @@ export async function removeSource(id: string) {
   return response.json();
 }
 
+export async function updateSourceWeight(id: string, weight: number) {
+  const response = await fetch('/api/sources', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, weight })
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error ?? 'Failed to update source weight');
+  }
+  return response.json();
+}
+
 export async function getComments(itemId: string) {
   const response = await fetch(`/api/comments?itemId=${encodeURIComponent(itemId)}`);
   if (!response.ok) {
-    throw new Error('Failed to load comments');
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error ?? 'Failed to load comments');
   }
   const data = await response.json();
   return (data.comments ?? []) as ThreadComment[];

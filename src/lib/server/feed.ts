@@ -6,6 +6,8 @@ export const mockFeed: FeedItem[] = [
     source: 'youtube',
     title: 'Building a tiny home lab in a weekend',
     summary: 'A full walkthrough of setting up a compact home server rack with low power draw.',
+    content:
+      'A full walkthrough of setting up a compact home server rack with low power draw. Covers hardware picks, airflow, cable planning, and a baseline monitoring stack.',
     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     mediaType: 'video',
     thumbnailUrl:
@@ -20,6 +22,8 @@ export const mockFeed: FeedItem[] = [
     source: 'reddit',
     title: 'New kernel patch reduces wake latency',
     summary: 'Discussion on kernel scheduler changes and battery impacts across devices.',
+    content:
+      'Discussion on kernel scheduler changes and battery impacts across devices. Includes benchmark links, potential regressions, and rollout concerns.',
     url: 'https://www.reddit.com/r/linux/comments/abcdef/new_kernel_patch/',
     mediaType: 'text',
     thumbnailUrl:
@@ -27,13 +31,16 @@ export const mockFeed: FeedItem[] = [
     createdAt: '2026-02-23T19:15:00Z',
     author: 'sysroot',
     topicTags: ['tech updates'],
-    score: 76
+    score: 76,
+    readTimeMinutes: 3
   },
   {
     id: 'yt-2',
     source: 'youtube',
     title: '3 tools to ship hobby apps faster',
     summary: 'Speed up prototypes with AI scaffolds, instant APIs, and rapid testing loops.',
+    content:
+      'Speed up prototypes with AI scaffolds, instant APIs, and rapid testing loops. The post includes setup templates and examples from recent launches.',
     url: 'https://www.youtube.com/watch?v=9bZkp7q19f0',
     mediaType: 'video',
     thumbnailUrl:
@@ -48,6 +55,8 @@ export const mockFeed: FeedItem[] = [
     source: 'reddit',
     title: 'Policy thread: 2026 tech regulation proposals',
     summary: 'A breakdown of policy proposals and how they affect AI research and funding.',
+    content:
+      'A breakdown of policy proposals and how they affect AI research and funding, including timelines, committee notes, and likely implementation hurdles.',
     url: 'https://www.reddit.com/r/politics/comments/ghijkl/2026_regulation_proposals/',
     mediaType: 'text',
     thumbnailUrl:
@@ -55,7 +64,8 @@ export const mockFeed: FeedItem[] = [
     createdAt: '2026-02-21T11:10:00Z',
     author: 'policywonk',
     topicTags: ['politics'],
-    score: 61
+    score: 61,
+    readTimeMinutes: 4
   }
 ];
 

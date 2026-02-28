@@ -1,56 +1,58 @@
 <script lang="ts">
-  import { appState } from '../stores.svelte';
+  import { setCategories } from '../stores.svelte';
 
-  function toggleConnection(source: string) {
-    if (appState.connectedSources.has(source)) {
-      appState.connectedSources.delete(source);
-    } else {
-      appState.connectedSources.add(source);
+  const cravings = [
+    'tech',
+    'tech updates',
+    'hobby project',
+    'politics',
+    'design systems',
+    'indie hacking',
+    'ai research',
+    'product strategy'
+  ];
+
+  let picked = $state<string[]>(['tech', 'tech updates', 'hobby project']);
+
+  function toggleCraving(tag: string) {
+    if (picked.includes(tag)) {
+      picked = picked.filter((entry) => entry !== tag);
+      return;
     }
+    if (picked.length >= 3) return;
+    picked = [...picked, tag];
+  }
+
+  function applyCravings() {
+    if (picked.length === 0) return;
+    setCategories(picked);
   }
 </script>
 
 <section class="panel" id="onboarding">
   <div class="panel-head">
-    <h2>Connect Sources</h2>
-    <p>Choose the platforms you want to pull from.</p>
+    <h2>What Are Your 3 Core Cravings Right Now?</h2>
+    <p>Pick up to 3. This drives your intent-first feed.</p>
   </div>
-  <div class="source-grid">
-    <button 
-      class="source-card" 
-      class:connected={appState.connectedSources.has('youtube')}
-      onclick={() => toggleConnection('youtube')}
-    >
-      <div class="source-icon">▶</div>
-      <div class="source-meta">
-        <div class="source-name">YouTube</div>
-        <div class="source-desc">Video + community posts</div>
-      </div>
-      <div class="source-action">
-        {appState.connectedSources.has('youtube') ? 'Connected' : 'Connect'}
-      </div>
-    </button>
-    <button 
-      class="source-card" 
-      class:connected={appState.connectedSources.has('reddit')}
-      onclick={() => toggleConnection('reddit')}
-    >
-      <div class="source-icon">r/</div>
-      <div class="source-meta">
-        <div class="source-name">Reddit</div>
-        <div class="source-desc">Text, links, discourse</div>
-      </div>
-      <div class="source-action">
-        {appState.connectedSources.has('reddit') ? 'Connected' : 'Connect'}
-      </div>
-    </button>
+
+  <div class="chip-row">
+    {#each cravings as tag}
+      <button class="chip" class:active={picked.includes(tag)} onclick={() => toggleCraving(tag)}>
+        {tag}
+      </button>
+    {/each}
+  </div>
+
+  <div class="foot-row">
+    <span>{picked.length}/3 selected</span>
+    <button class="primary" onclick={applyCravings}>Apply cravings</button>
   </div>
 </section>
 
 <style>
   .panel {
-    background: rgba(13, 34, 30, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(13, 34, 30, 0.82);
+    border: 0;
     border-radius: var(--radius-lg);
     padding: 20px;
     box-shadow: var(--shadow);
@@ -60,7 +62,7 @@
 
   .panel-head h2 {
     margin: 0 0 6px;
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .panel-head p {
@@ -69,76 +71,36 @@
     font-size: 14px;
   }
 
-  .source-grid {
-    display: grid;
-    gap: 12px;
-  }
-
-  .source-card {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: var(--card);
-    border-radius: var(--radius-md);
-    padding: 16px;
+  .chip-row {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    min-width: 0;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
-  .source-card.connected {
-    border-color: rgba(69, 242, 193, 0.8);
-    background: rgba(69, 242, 193, 0.1);
-  }
-
-  .source-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .source-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+  .chip {
+    border: 0;
     background: rgba(255, 255, 255, 0.08);
-    display: grid;
-    place-items: center;
-    font-weight: 700;
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
-  .source-meta {
-    flex: 1;
-    min-width: 0;
+  .chip.active {
+    background: var(--accent);
+    color: #1a1002;
+    box-shadow: 0 6px 12px rgba(255, 176, 56, 0.3);
   }
 
-  .source-name {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .source-desc {
-    font-size: 12px;
+  .foot-row {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
     color: var(--ink-soft);
-    overflow-wrap: anywhere;
-  }
-
-  .source-action {
-    white-space: nowrap;
-  }
-
-  .source-action {
     font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--accent);
-  }
-
-  @media (min-width: 720px) {
-    .source-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
   }
 </style>

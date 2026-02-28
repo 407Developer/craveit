@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from '$app/state';
+  import { startUsageTracking, stopUsageTracking } from '$lib/stores.svelte';
   import "../app.css";
   let { children } = $props();
 
@@ -8,6 +9,8 @@
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js");
     }
+    startUsageTracking();
+    return () => stopUsageTracking();
   });
 
   const navItems = [
@@ -128,8 +131,8 @@
     width: 38px;
     height: 38px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.06);
+    border: 0;
+    background: rgba(255, 255, 255, 0.1);
     display: grid;
     place-items: center;
     color: var(--ink);
@@ -156,7 +159,7 @@
     width: min(520px, calc(100vw - 16px));
     background: rgba(12, 22, 21, 0.95);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 0;
     border-radius: 18px;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

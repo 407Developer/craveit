@@ -1,24 +1,25 @@
 <script lang="ts">
   import { refreshFeed } from '../stores.svelte';
+
+  let { message } = $props<{ message?: string }>();
 </script>
 
 <div class="state state-error">
   <h3>Something went sideways</h3>
-  <p>We couldn't load your feed. Check your connection or try again.</p>
+  <p>{message ?? "We couldn't load your feed. Check your connection or try again."}</p>
   <button class="primary" onclick={refreshFeed}>Try Again</button>
 </div>
 
 <style>
   .state {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border: 0;
     padding: 24px;
     border-radius: var(--radius-md);
     text-align: center;
   }
 
   .state-error {
-    border-color: rgba(255, 107, 107, 0.5);
     background: rgba(255, 107, 107, 0.1);
   }
 
