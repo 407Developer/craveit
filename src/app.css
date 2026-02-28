@@ -11,6 +11,18 @@
   --radius-lg: 28px;
   --radius-md: 18px;
   --radius-sm: 12px;
+  --streak-fire: #ff6b35;
+}
+
+:root.theme-light {
+  --bg: #f5fcf9;
+  --bg-soft: #ffffff;
+  --card: #e8f5f0;
+  --accent: #f39c12;
+  --accent-2: #2ecc71;
+  --ink: #1a2c26;
+  --ink-soft: #5d7c71;
+  --shadow: 0 15px 35px rgba(22, 54, 46, 0.12);
 }
 
 * {
@@ -21,20 +33,32 @@ html,
 body {
   width: 100%;
   overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 body {
   margin: 0;
   font-family: "Space Grotesk", "Helvetica Neue", sans-serif;
   color: var(--ink);
-  background: radial-gradient(circle at top left, rgba(69, 242, 193, 0.15), transparent 55%),
-              radial-gradient(circle at 20% 80%, rgba(255, 176, 56, 0.18), transparent 50%),
-              var(--bg);
+  background: var(--bg);
   min-height: 100vh;
   padding: clamp(14px, 3vw, 24px) clamp(12px, 4vw, 18px) 80px;
   position: relative;
   overflow-x: hidden;
 }
+
+:root:not(.theme-light) body {
+  background: radial-gradient(circle at top left, rgba(69, 242, 193, 0.1), transparent 55%),
+              radial-gradient(circle at 20% 80%, rgba(255, 176, 56, 0.12), transparent 50%),
+              var(--bg);
+}
+
+:root.theme-light body {
+  background: radial-gradient(circle at top left, rgba(69, 242, 193, 0.2), transparent 55%),
+              radial-gradient(circle at 20% 80%, rgba(255, 176, 56, 0.15), transparent 50%),
+              var(--bg);
+}
+
 
 img,
 iframe,

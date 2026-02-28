@@ -16,6 +16,7 @@ function parseCsvList(value: string) {
 }
 
 class AppState {
+  theme = $state<'dark' | 'light'>('dark');
   categories = new SvelteSet<string>(['tech', 'tech updates', 'hobby project']);
   sources = new SvelteSet<string>(['youtube', 'reddit', 'web']);
   pausedSourceIds = new SvelteSet<string>();
@@ -53,11 +54,15 @@ class AppState {
   constructor() {
     this.loadLocalPrefs();
     this.recordAppVisit();
+    this.applyTheme();
   }
 
   private loadLocalPrefs() {
     if (typeof window === 'undefined') return;
     try {
+      const savedTheme = window.localStorage.getItem('craveit:theme');
+      if (savedTheme === 'light') this.theme = 'light';
+
       const paused = JSON.parse(window.localStorage.getItem('craveit:paused-sources') || '[]');
       if (Array.isArray(paused)) {
         paused.forEach((id) => this.pausedSourceIds.add(String(id)));
@@ -95,6 +100,7 @@ class AppState {
 
   private persistPrefs() {
     if (typeof window === 'undefined') return;
+    window.localStorage.setItem('craveit:theme', this.theme);
     window.localStorage.setItem(
       'craveit:paused-sources',
       JSON.stringify(Array.from(this.pausedSourceIds))
@@ -106,6 +112,22 @@ class AppState {
     window.localStorage.setItem('craveit:timebox-minutes', String(this.timeboxMinutes));
     window.localStorage.setItem('craveit:streak:channels', JSON.stringify(this.channelStreaks));
   }
+
+  private applyTheme() {
+    if (typeof document === 'undefined') return;
+    if (this.theme === 'light') {
+      document.documentElement.classList.add('theme-light');
+    } else {
+      document.documentElement.classList.remove('theme-light');
+    }
+  }
+
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    this.applyTheme();
+    this.persistPrefs();
+  }
+
 
   private saveUsage(seconds: number) {
     if (typeof window === 'undefined') return;
@@ -413,4 +435,8 @@ export function togglePausedSource(sourceId: string) {
 
 export function openFeedItem(item: FeedItem) {
   return appState.openItem(item);
+}
+
+export function toggleTheme() {
+  return appState.toggleTheme();
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from '$app/state';
-  import { startUsageTracking, stopUsageTracking } from '$lib/stores.svelte';
+  import { appState, startUsageTracking, stopUsageTracking, toggleTheme } from '$lib/stores.svelte';
   import "../app.css";
   let { children } = $props();
 
@@ -46,11 +46,29 @@
       <span class="brand-mark">c</span>
       <span class="brand-name">craveit</span>
     </a>
-    <a class="profile-btn" href="/profile" aria-label="Profile">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"></path>
-      </svg>
-    </a>
+
+    <div class="topbar-actions">
+      {#if appState.appStreak > 0}
+        <div class="streak-badge" title="Daily Streak">
+          <span class="fire">🔥</span>
+          <span class="count">{appState.appStreak}</span>
+        </div>
+      {/if}
+
+      <button class="icon-btn theme-toggle" onclick={toggleTheme} aria-label="Toggle theme">
+        {#if appState.theme === 'dark'}
+          ☀️
+        {:else}
+          🌙
+        {/if}
+      </button>
+
+      <a class="profile-btn" href="/profile" aria-label="Profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"></path>
+        </svg>
+      </a>
+    </div>
   </header>
 
   <main class="page-wrap">
@@ -100,6 +118,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    padding: 10px 16px;
   }
 
   .brand {
@@ -127,7 +146,13 @@
     letter-spacing: 0.3px;
   }
 
-  .profile-btn {
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .icon-btn, .profile-btn {
     width: 38px;
     height: 38px;
     border-radius: 999px;
@@ -137,6 +162,43 @@
     place-items: center;
     color: var(--ink);
     text-decoration: none;
+    cursor: pointer;
+    font-size: 18px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .icon-btn:hover, .profile-btn:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .streak-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 107, 53, 0.12);
+    padding: 6px 14px;
+    border-radius: 999px;
+    color: #ff6b35;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    animation: streakPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .streak-badge .fire {
+    animation: flamePulse 2s infinite alternate;
+  }
+
+  @keyframes streakPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes flamePulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px #ff6b35); }
+    100% { transform: scale(1.2); filter: drop-shadow(0 0 6px #ff6b35); }
   }
 
   .profile-btn svg {
@@ -149,6 +211,7 @@
     width: 100%;
     max-width: 1120px;
     margin: 0 auto;
+    padding: 0 16px;
   }
 
   .bottom-nav {
@@ -157,26 +220,33 @@
     bottom: 12px;
     transform: translateX(-50%);
     width: min(520px, calc(100vw - 16px));
-    background: rgba(12, 22, 21, 0.95);
+    background: rgba(var(--nav-bg-rgb, 12, 22, 21), 0.95);
     backdrop-filter: blur(10px);
-    border: 0;
-    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     padding: 6px;
     z-index: 20;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+
+  :root.theme-light .bottom-nav {
+    background: rgba(245, 252, 249, 0.9);
+    border: 1px solid rgba(26, 44, 38, 0.05);
+    box-shadow: 0 10px 30px rgba(22, 54, 46, 0.1);
   }
 
   .nav-link {
-    border-radius: 12px;
-    min-height: 56px;
+    border-radius: 14px;
+    min-height: 54px;
     color: var(--ink-soft);
     text-decoration: none;
     display: grid;
     place-items: center;
     gap: 4px;
     font-size: 11px;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: all 0.2s ease;
   }
 
   .nav-link svg {
@@ -187,6 +257,7 @@
 
   .nav-link.active {
     background: rgba(69, 242, 193, 0.14);
-    color: var(--ink);
+    color: var(--accent-2);
+    font-weight: 600;
   }
 </style>
